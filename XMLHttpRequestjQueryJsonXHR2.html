@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Demo</title>
+	<style>
+		body, input, select, button, h1 {
+			font-size: 28px;
+			line-height:1.7;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>员工查询</h1>
+
+	<label>请输入员工编号：</label>
+	<input type="text" id="keyword" />
+	<button id="search">查询</button>
+	<p id="searchResult"></p>
+
+	<h1>员工新建</h1>
+	<label>请输入员工姓名：</label>
+	<input type="text" id="staffName" />
+	<br>
+	<label>请输入员工编号：</label>
+	<input type="text" id="staffNumber" />
+	<br>
+	<label>请选择员工性别：</label>
+	<select id="staffSex">
+		<option>女</option>
+		<option>男</option>
+	</select>
+	<br>
+	<label>请输入员工职位：</label>
+	<input type="text" id="staffJob" />
+	<br>
+	<button id="save">保存</button>
+	<p id="createResult"></p>
+	<!-- 引入jQuery -->
+	<script src="http://apps.bdimg.com/libs/jquery/1.11.1/jquery.js"></script>
+	<script>
+		// jQuery初始化
+		$(document).ready(function(){
+			// 查询(调用异步的GET请求，局部更新页面的信息)
+			$("#search").click(function(){
+				// jQuery封装了一个ajax的方法
+				$.ajax({ 
+				    type: "GET",
+				    // 相对路径，本地和localhost同一路径
+				    // url:"serverjson.php?number=" + $("#keyword").val(),
+
+				    // 绝对路径，但是也和localhost在同一路径
+				    // url: "http://localhost/ajaxdemo/serverjson.php?number=" + $("#keyword").val(),
+
+				    // 和localhost地址相比，已经跨域
+				    // 这里用的是serverjson2.php，和serverjson.php最大的不同就在于php头部引入不同，用的是XHR2-H5的技术，就可以自动跨域，不管是GET请求还是POST请求都支持，只是不支持低版本浏览器
+					url: "http://127.0.0.1/ajaxdemo/serverjson2.php?number=" + $("#keyword").val(),
+
+					// json数据
+					dataType: "json",
+					// data其实就是request.responseText
+					// 因为已经指定了dataType是json，所以不需要再解析json数据，也就是说var data = JSON.parse(request.responseText);这句代码就不需要了，data可以直接使用
+					success: function(data) {
+						if (data.success) {
+							// .html()相当于.innerHTML
+							$("#searchResult").html(data.msg);
+						} else {
+							$("#searchResult").html("出现错误：" + data.msg);
+						}  
+					},
+					// jQuery的XMLHttpRequest对象就是jqXHR，jqXHR.status就是request.status
+					error: function(jqXHR){     
+					   alert("发生错误：" + jqXHR.status);  
+					},     
+				});
+			});
+			
+			$("#save").click(function(){ 
+				$.ajax({ 
+				    type: "POST", 	
+					url: "http://127.0.0.1/ajaxdemo/serverjson2.php",
+					// 使用data传数据，用json键值对的方式
+					data: {
+						name: $("#staffName").val(), 
+						number: $("#staffNumber").val(), 
+						sex: $("#staffSex").val(), 
+						job: $("#staffJob").val()
+					},
+					dataType: "json",
+					success: function(data){
+						if (data.success) { 
+							$("#createResult").html(data.msg);
+						} else {
+							$("#createResult").html("出现错误：" + data.msg);
+						}  
+					},
+					error: function(jqXHR){     
+					   alert("发生错误：" + jqXHR.status);  
+					},     
+				});
+			});
+		});
+	</script>
+</body>
+</html>

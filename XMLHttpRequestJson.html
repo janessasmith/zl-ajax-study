@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Demo</title>
+	<style>
+		body, input, select, button, h1 {
+			font-size: 28px;
+			line-height:1.7;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>员工查询</h1>
+
+	<label>请输入员工编号：</label>
+	<input type="text" id="keyword" />
+	<button id="search">查询</button>
+	<p id="searchResult"></p>
+
+	<h1>员工新建</h1>
+	<label>请输入员工姓名：</label>
+	<input type="text" id="staffName" />
+	<br>
+	<label>请输入员工编号：</label>
+	<input type="text" id="staffNumber" />
+	<br>
+	<label>请选择员工性别：</label>
+	<select id="staffSex">
+		<option>女</option>
+		<option>男</option>
+	</select>
+	<br>
+	<label>请输入员工职位：</label>
+	<input type="text" id="staffJob" />
+	<br>
+	<button id="save">保存</button>
+	<p id="createResult"></p>
+
+	<!-- json数据格式约定(所有从服务器端返回的json字符串)：
+		{
+			// 是否正确执行(逻辑是否正确)
+			"success": true,
+			// 请求返回值(当success为false时，返回的是错误信息，当sucess为true时，返回的是正确信息)
+			"msg": "xxx",
+			// 请求返回数据
+			"data": "xxx"
+		}
+	-->
+
+	<script type="text/javascript">
+		// 查询(调用异步的GET请求，局部更新页面的信息)
+		document.getElementById("search").onclick = function() {
+			// 发送Ajax查询请求并处理
+			var request = new XMLHttpRequest();
+			// json数据
+			request.open("GET", "serverjson.php?number=" + document.getElementById("keyword").value);
+			request.send();
+			// 获取服务器readyState属性的改变
+			request.onreadystatechange = function() {
+				// 判断服务器请求是否结束
+				if (request.readyState===4) {
+					// 判断请求是否成功
+					if (request.status===200) {
+
+						// 客户端不能直接输入服务器端的json文本，会把服务器端返回的json字符串直接显示在页面上
+						// document.getElementById("searchResult").innerHTML = request.responseText;
+
+						// 使用JSON.parse()解析json数据
+						var data = JSON.parse(request.responseText);
+						// if(data.success === trune){}一样，本身就是布尔值，true可以直接省略
+						if (data.success) { 
+							document.getElementById("searchResult").innerHTML = data.msg;
+						} else {
+							document.getElementById("searchResult").innerHTML = "出现错误：" + data.msg;
+						}
+					} else {
+						alert("发生错误：" + request.status);
+					}
+				} 
+			}
+		}
+
+		// 保存数据
+		document.getElementById("save").onclick = function() { 
+			var request = new XMLHttpRequest();
+
+			request.open("POST", "serverjson.php");
+
+			var data = "name=" + document.getElementById("staffName").value 
+			                   + "&number=" + document.getElementById("staffNumber").value 
+			                   + "&sex=" + document.getElementById("staffSex").value 
+			                   + "&job=" + document.getElementById("staffJob").value;
+            // POST方法中，必须有的一步，要放在request.open()和request.send()方法之间
+			request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			// 将参数传给request方法
+			request.send(data);
+
+			request.onreadystatechange = function() {
+				if (request.readyState===4) {
+					if (request.status===200) {
+						// 使用JSON.parse()解析json数据
+						var data = JSON.parse(request.responseText);
+						if (data.success) { 
+							document.getElementById("createResult").innerHTML = data.msg;
+						} else {
+							document.getElementById("createResult").innerHTML = "出现错误：" + data.msg;
+						}
+					} else {
+						alert("发生错误：" + request.status);
+					}
+				} 
+			}
+		}
+	</script>
+</body>
+</html>
